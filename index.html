@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xadrez (vs Bot Alpha-Beta)</title>
+    <link rel="stylesheet" href="style.css">    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Xadrez (vs Bot Alpha-Beta)</h1>
+    </header>
+    <div class="container">
+        <div id="tabuleiro"></div>
+        <div class="side-panels">
+            <div class="info-panel">
+                <p id="status">Clique em uma peça branca para começar.</p>
+                <button onclick="novoJogo()">Novo Jogo</button><br>
+                <button id="toggle-bot" onclick="toggleBot()">Bot ON/OFF (Atual: ON)</button><br>
+                <button id="toggle-orientacao" onclick="inverterTabuleiro()">Orientação (Atual: Brancas)</button>
+            </div>
+            <div id="historico-jogadas">
+                <h3>Histórico de Jogadas</h3>
+                <div id="lista-jogadas"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
