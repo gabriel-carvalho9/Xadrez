@@ -20,9 +20,9 @@ h1 {
 /* --- Estilo do Tabuleiro Principal com Espaço para Coordenadas --- */
 #tabuleiro {
     display: grid;
-    /* 10 colunas: 1 para coord | 8 para casas | 1 para coord */
+    /* 10 colunas: 1 para coordinates | 8 para casas | 1 para coord */
     grid-template-columns: 20px repeat(8, 60px) 20px; 
-    /* 10 linhas: 1 para coord | 8 para casas | 1 para coord */
+    /* 10 linhas: 1 para coordinates | 8 para casas | 1 para coord */
     grid-template-rows: 20px repeat(8, 60px) 20px; 
     
     border: none;

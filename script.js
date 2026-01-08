@@ -1,41 +1,41 @@
-// --- VARIÁVEIS GLOBAIS ---
+// --- GLOBAL VARIABLES ---
 let jogo = new Chess(); 
 let tabuleiroDiv = document.getElementById('tabuleiro');
 let casaSelecionada = null;
 let botAtivo = true;
-// Define quem está na parte inferior do tabuleiro ('w' para Brancas na base, 'b' para Pretas na base)
+// Defines who is at the bottom of the board ('w' for White at the bottom, 'b' for Black at the bottom).
 let orientacaoTabuleiro = 'w'; 
 
-// Mapeamento de peças (usando símbolos Unicode)
+// Mapping of parts (using Unicode symbols)
 const pecasUnicode = {
     'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟',
     'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙'
 };
 
-// Profundidade de busca da IA
+// Deep AI search
 const PROFUNDIDADE_BUSCA = 2; 
 
-// --- FUNÇÕES DE INTERFACE E RENDERIZAÇÃO (COM INVERSÃO) ---
+// --- INTERFACE AND RENDERING FUNCTIONS (WITH INVERSION) ---
 
 function desenharTabuleiro() {
-    tabuleiroDiv.innerHTML = ''; // Limpa o tabuleiro e as coordenadas
+    tabuleiroDiv.innerHTML = ''; // Clear coordinates
 
-    // Configura a ordem de iteração para renderizar de acordo com a orientação
+    // Configures the iteration order to render according to the orientation.
     const ranks = (orientacaoTabuleiro === 'w') ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
     const files = (orientacaoTabuleiro === 'w') ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
     
-    // 1. Criar o contêiner interno que terá as 64 casas
+    // 1. Create the inner container that will hold the 64 houses.
     const gridCasas = document.createElement('div');
     gridCasas.className = 'tabuleiro-grid';
 
     const casas = jogo.board();
     
-    // 2. Criar e adicionar as 64 casas internas ao gridCasas
+    // 2. Create and add the 64 interior houses to the gridCasas
     for (const rank of ranks) { 
-        // i é o índice do array do chess.js (0 a 7, onde 0 é a linha 8)
+        // i is the array index from chess.js (0 to 7, where 0 is line 8)
         const i = 8 - rank; 
         
-        for (const j of files) { // j é o índice da coluna (0 a 7)
+        for (const j of files) { // j is the column index (0 to 7)
             const casa = casas[i][j];
             const nomeCasa = String.fromCharCode(97 + j) + rank; 
             const cor = (i + j) % 2 === 0 ? 'clara' : 'escura';
@@ -56,26 +56,26 @@ function desenharTabuleiro() {
         }
     }
     
-    // 3. Adicionar o contêiner de casas (gridCasas) ao tabuleiro principal
+    // 3. Add the housing container (gridCasas) to the main board.
     tabuleiroDiv.appendChild(gridCasas); 
 
 
-    // 4. Gerar e adicionar as coordenadas (também invertidas)
+    // 4. Generate and add the coordinates (also reversed)
     
-    // Ranks para Coordenadas (8-1 ou 1-8)
+    // Ranks for Coordinates (8-1 or 1-8)
     const ranksCoord = (orientacaoTabuleiro === 'w') ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
     for (let idx = 0; idx < 8; idx++) {
         const rank = ranksCoord[idx]; 
-        const gridRowPos = idx + 2; // Linhas 2 a 9 (para as casas)
+        const gridRowPos = idx + 2; // Lines 2 to 9 (for the houses)
 
-        // Coordenada Esquerda
+        // Left Coordinate
         const coordEsq = document.createElement('div');
         coordEsq.className = 'coordenada lateral';
         coordEsq.style.gridRow = gridRowPos; 
         coordEsq.textContent = rank;
         tabuleiroDiv.appendChild(coordEsq);
         
-        // Coordenada Direita
+        // Right Coordinate
         const coordDir = document.createElement('div');
         coordDir.className = 'coordenada';
         coordDir.style.gridRow = gridRowPos; 
@@ -84,21 +84,21 @@ function desenharTabuleiro() {
         tabuleiroDiv.appendChild(coordDir);
     }
 
-    // Files para Coordenadas (a-h ou h-a)
+    // Files for Coordinates (a-h or h-a)
     const filesCoord = (orientacaoTabuleiro === 'w') ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
     for (let idx = 0; idx < 8; idx++) {
         const j = filesCoord[idx];
         const file = String.fromCharCode(97 + j); 
-        const gridColPos = idx + 2; // Colunas 2 a 9 (para as casas)
+        const gridColPos = idx + 2; // Columns 2 to 9 (for the houses)
 
-        // Coordenada Inferior
+        // Lower Coordinate
         const coordInf = document.createElement('div');
         coordInf.className = 'coordenada inferior';
         coordInf.style.gridColumn = gridColPos; 
         coordInf.textContent = file;
         tabuleiroDiv.appendChild(coordInf);
         
-        // Coordenada Superior
+        // Higher Coordinate
         const coordSup = document.createElement('div');
         coordSup.className = 'coordenada superior';
         coordSup.style.gridColumn = gridColPos; 
@@ -106,7 +106,7 @@ function desenharTabuleiro() {
         tabuleiroDiv.appendChild(coordSup);
     }
     
-    // 5. Atualizar o histórico e status
+    // 5. Update history and status
     atualizarStatus();
     atualizarHistorico();
 }
@@ -117,7 +117,7 @@ function onCasaClick(nomeCasa) {
 
     if (casaSelecionada === null) {
         const peca = jogo.get(nomeCasa);
-        // Permite seleção apenas se a peça for da cor que está jogando
+        // Selection is only allowed if the piece is the same color as the game being played.
         if (peca && peca.color === jogo.turn()) { 
             casaSelecionada = nomeCasa;
             divCasa.classList.add('selecionada');
@@ -137,7 +137,7 @@ function onCasaClick(nomeCasa) {
             casaSelecionada = null;
             desenharTabuleiro(); 
             
-            // Verifica se é a vez do Bot e ele está ativo
+            // Check if it's the Bot's turn and if it's active.
             if (botAtivo && jogo.turn() !== jogadorLocal()) {
                 setTimeout(movimentoBotInteligente, 500); 
             }
@@ -148,9 +148,9 @@ function onCasaClick(nomeCasa) {
     }
 }
 
-// Funções utilitárias para determinar quem é o jogador humano e quem é o bot
+// Utility functions to determine who is the human player and who is the bot
 function jogadorLocal() {
-    // O jogador humano sempre joga com a cor que está na base do tabuleiro
+    // The human player always plays with the color at the bottom of the board
     return orientacaoTabuleiro; 
 }
 
@@ -172,7 +172,7 @@ function atualizarHistorico() {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'jogada-item';
 
-        // Usamos 'san' para a Notação Algébrica Padrão (e4, Nf3, etc.)
+        // We use 'san' for Standard Algebraic Notation (e4, Nf3, etc.)
         let textoJogada = `<strong>${jogadaAtual}.</strong> W: ${jogadaBranca.san}`;
         
         if (jogadaPreta) {
@@ -205,17 +205,22 @@ function limparMarcacoes() {
 
 function atualizarStatus() {
     let status = '';
-    const corVez = jogo.turn() === 'w' ? 'Brancas' : 'Pretas';
-    const nomeVez = jogo.turn() === jogadorLocal() ? 'Você' : 'Bot';
+    const corVez = jogo.turn() === 'w' ? 'Whites' : 'Blacks';
+    const nomeVez = jogo.turn() === jogadorLocal() ? 'You' : 'Bot';
 
     if (jogo.in_checkmate()) {
-        status = `XEQUE-MATE! ${jogo.turn() === 'w' ? 'Pretas' : 'Brancas'} VENCERAM.`;
-    } else if (jogo.in_stalemate() || jogo.in_threefold_repetition() || jogo.insufficient_material() || jogo.in_draw()) {
-        status = 'JOGO ENCERRADO: EMPATE.';
+        status = `CHECKMATE! ${jogo.turn() === 'w' ? 'Blacks' : 'Whites'} WON.`;
+    } else if (
+        jogo.in_stalemate() ||
+        jogo.in_threefold_repetition() ||
+        jogo.insufficient_material() ||
+        jogo.in_draw()
+    ) {
+        status = 'GAME OVER: DRAW.';
     } else {
-        status = `Vez das ${corVez} (${nomeVez}).`;
+        status = `Turn of ${corVez} (${nomeVez}).`;
         if (jogo.in_check()) {
-            status += ' O Rei está em XEQUE!';
+            status += ' The King is in CHECK!';
         }
     }
 
@@ -227,11 +232,11 @@ function novoJogo() {
     casaSelecionada = null;
     desenharTabuleiro();
     
-    const corVez = jogo.turn() === 'w' ? 'Brancas' : 'Pretas';
-    const nomeVez = jogo.turn() === jogadorLocal() ? 'Você' : 'Bot';
-    document.getElementById('status').innerText = `Novo jogo iniciado. Vez das ${corVez} (${nomeVez}).`;
+    const corVez = jogo.turn() === 'w' ? 'Whites' : 'Blacks';
+    const nomeVez = jogo.turn() === jogadorLocal() ? 'You' : 'Bot';
+    document.getElementById('status').innerText = `New game started. Turn of ${corVez} (${nomeVez}).`;
     
-    // Se o Bot for Brancas e for a vez dele, ele joga o primeiro movimento
+    // If the Bot is White and it's its turn, it makes the first move
     if (botAtivo && jogo.turn() === corBot()) {
         setTimeout(movimentoBotInteligente, 500); 
     }
@@ -240,35 +245,35 @@ function novoJogo() {
 function toggleBot() {
     botAtivo = !botAtivo;
     const btn = document.getElementById('toggle-bot');
-    btn.innerText = `Bot ON/OFF (Atual: ${botAtivo ? 'ON' : 'OFF'})`;
+    btn.innerText = `Bot ON/OFF (Current: ${botAtivo ? 'ON' : 'OFF'})`;
     
-    // Se ativado e for a vez do Bot
+    // If activated and it's the Bot's turn
     if (botAtivo && jogo.turn() === corBot()) {
         setTimeout(movimentoBotInteligente, 500); 
     }
 }
 
-// Inverte a orientação do tabuleiro e atualiza o botão
+// Inverts the board orientation and updates the button
 function inverterTabuleiro() {
     orientacaoTabuleiro = (orientacaoTabuleiro === 'w') ? 'b' : 'w';
     
     const btn = document.getElementById('toggle-orientacao');
-    btn.innerText = `Orientação (Atual: ${orientacaoTabuleiro === 'w' ? 'Brancas' : 'Pretas'})`;
+    btn.innerText = `Orientation (Current: ${orientacaoTabuleiro === 'w' ? 'Whites' : 'Blacks'})`;
     
     desenharTabuleiro();
     
-    // Se for a vez do Bot e a orientação for alterada, o Bot joga
+    // If it's the Bot's turn after changing orientation, the Bot plays
     if (botAtivo && jogo.turn() === corBot()) {
         setTimeout(movimentoBotInteligente, 500);
     } else {
-        atualizarStatus(); // Atualiza para mostrar a cor correta do jogador/bot
+        atualizarStatus(); // Updates to show the correct player/bot color
     }
 }
 
-// --- LÓGICA DO BOT INTELIGENTE (IA) ---
+// --- INTELLIGENT BOT LOGIC (AI) ---
 
-// Tabela de Pesos Posicionais (PSTs)
-// ... (PSTs mantidas) ...
+// Positional Weight Tables (PSTs)
+// ... (PSTs kept) ...
 const pst_p = [
     [0, 0, 0, 0, 0, 0, 0, 0], [5, 10, 10, -20, -20, 10, 10, 5],
     [5, -5, -10, 0, 0, -10, -5, 5], [0, 0, 0, 20, 20, 0, 0, 0],
@@ -287,11 +292,11 @@ const valoresPeca = {
     'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000 
 };
 
-//Avalia a posição do tabuleiro. Positivo: bom para o Bot.
-
+// Evaluates the board position. Positive: good for the Bot.
 function avaliarPosicao(jogo) {
     if (jogo.game_over()) {
-        // Se o jogo acabou e é a vez do Bot, ele perdeu (ou empatou). Se não for a vez do Bot, ele ganhou.
+        // If the game is over and it's the Bot's turn, it lost (or drew).
+        // If it's not the Bot's turn, it won.
         return jogo.turn() === corBot() ? -Infinity : Infinity;
     }
 
@@ -306,12 +311,14 @@ function avaliarPosicao(jogo) {
                 const valorMaterial = valoresPeca[casa.type];
                 let valorPosicional = 0;
                 
-                if (casa.type === 'p') valorPosicional = (casa.color === 'w') ? pst_p[7 - i][j] : pst_p[i][j];
-                if (casa.type === 'n') valorPosicional = (casa.color === 'w') ? pst_n[7 - i][j] : pst_n[i][j];
+                if (casa.type === 'p')
+                    valorPosicional = (casa.color === 'w') ? pst_p[7 - i][j] : pst_p[i][j];
+                if (casa.type === 'n')
+                    valorPosicional = (casa.color === 'w') ? pst_n[7 - i][j] : pst_n[i][j];
 
                 const valorTotal = valorMaterial + valorPosicional;
 
-                // Avalia em relação ao Bot
+                // Evaluate relative to the Bot
                 if (casa.color === botColor) {
                     score += valorTotal;
                 } else {
@@ -323,8 +330,7 @@ function avaliarPosicao(jogo) {
     return score;
 }
 
-// Algoritmo Minimax com Poda Alpha-Beta.
-
+// Minimax algorithm with Alpha-Beta pruning
 function minimax(jogo, profundidade, alpha, beta, maximizando) {
     if (profundidade === 0 || jogo.game_over()) {
         return avaliarPosicao(jogo);
@@ -345,7 +351,7 @@ function minimax(jogo, profundidade, alpha, beta, maximizando) {
             if (beta <= alpha) break; 
         }
         return maxEval;
-    } else { // Minimizando (vez do oponente do Bot)
+    } else { // Minimizing (Bot opponent's turn)
         let minEval = Infinity;
         for (const mov of movimentos) {
             jogo.move(mov);
@@ -361,7 +367,7 @@ function minimax(jogo, profundidade, alpha, beta, maximizando) {
     }
 }
 
-// Lógica principal do bot: usa o Minimax para encontrar o melhor movimento.
+// Main bot logic: uses Minimax to find the best move
 function movimentoBotInteligente() {
     const movimentosValidos = jogo.moves();
     let melhorMovimento = null;
@@ -372,8 +378,14 @@ function movimentoBotInteligente() {
     for (const mov of movimentosValidos) {
         jogo.move(mov);
         
-        // Chamada Minimax: buscando o melhor movimento para o bot (Max)
-        const avaliacao = minimax(jogo, PROFUNDIDADE_BUSCA - 1, -Infinity, Infinity, false);
+        // Minimax call: searching for the best move for the bot (Max)
+        const avaliacao = minimax(
+            jogo,
+            PROFUNDIDADE_BUSCA - 1,
+            -Infinity,
+            Infinity,
+            false
+        );
         
         jogo.undo(); 
         
@@ -383,7 +395,7 @@ function movimentoBotInteligente() {
         }
     }
 
-    // Rede de Segurança: Se o Minimax falhar em retornar um movimento, use o primeiro legal.
+    // Safety net: if Minimax fails to return a move, use the first legal one
     if (melhorMovimento === null && movimentosValidos.length > 0) {
         melhorMovimento = movimentosValidos[0]; 
     }
@@ -398,7 +410,7 @@ function movimentoBotInteligente() {
     }
 }
 
-// --- INICIALIZAÇÃO ---
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     desenharTabuleiro();
 });
